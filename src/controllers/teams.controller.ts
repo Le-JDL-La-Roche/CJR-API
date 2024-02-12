@@ -8,6 +8,7 @@ import nexter from '$utils/nexter'
 import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { Team } from '$models/features/team.model'
+import { Match } from '$models/features/match.model'
 
 export default class Teams {
   async getTeams(): Promise<DataSuccess<{ teams: Team[] }>> {
@@ -46,7 +47,7 @@ export default class Teams {
 
     let teamCount: number
     try {
-      teamCount = (await db.query<count[]>('SELECT COUNT(*) as count FROM teams WHERE name = ? AND school = ?', [body.name, body.school]))[0].count
+      teamCount = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE name = ? AND school = ?', [body.name, body.school]))[0].count
     } catch (error: any) {
       throw new DBException()
     }
@@ -83,7 +84,7 @@ export default class Teams {
 
     let teamCount: number
     try {
-      teamCount = (await db.query<count[]>('SELECT COUNT(*) FROM teams WHERE name = ? AND school = ? AND id != ?', [body.name, body.school, id]))[0]
+      teamCount = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE name = ? AND school = ? AND id != ?', [body.name, body.school, id]))[0]
         .count
     } catch (error: any) {
       throw new DBException()
@@ -95,7 +96,7 @@ export default class Teams {
     if (body.school) {
       let schoolCount: number
       try {
-        schoolCount = (await db.query<count[]>('SELECT COUNT(*) as count FROM schools WHERE id = ?', [+body.school]))[0].count
+        schoolCount = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [+body.school]))[0].count
       } catch (error: any) {
         throw new DBException()
       }
@@ -119,7 +120,7 @@ export default class Teams {
     return this.getTeams()
   }
 
-  async deleteTeam(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ teams: Team[] }>> {
+  async deleteTeam(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ teams: Team[], matches: Match[] }>> {
     try {
       nexter.serviceToException(await new AuthService().checkAuth(headers['authorization'] + '', 'Bearer'))
     } catch (error: unknown) {
@@ -138,11 +139,20 @@ export default class Teams {
     }
 
     try {
+      await db.query('DELETE FROM matches WHERE team1 = ? OR team2 = ?', [id, id])
+    } catch (error: any) {
+      throw new DBException()
+    }
+
+    try {
       await db.query('DELETE FROM teams WHERE id = ?', [id])
     } catch (error: any) {
       throw new DBException()
     }
 
-    return this.getTeams()
+    return new DataSuccess(200, SUCCESS, 'Success', {
+      teams: (await this.getTeams()).data.teams,
+      matches: []
+    })
   }
 }

@@ -8,6 +8,9 @@ import nexter from '$utils/nexter'
 import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { School } from '$models/features/school.model'
+import { Team } from '$models/features/team.model'
+import Teams from './teams.controller'
+import { Match } from '$models/features/match.model'
 
 export default class Schools {
   async getSchools(): Promise<DataSuccess<{ schools: School[] }>> {
@@ -39,7 +42,7 @@ export default class Schools {
 
     let schoolCount: number
     try {
-      schoolCount = (await db.query<count[]>('SELECT COUNT(*) as count FROM schools WHERE name = ? AND category = ?', [body.name, body.category]))[0]
+      schoolCount = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE name = ? AND category = ?', [body.name, body.category]))[0]
         .count
     } catch (error: any) {
       throw new DBException()
@@ -82,7 +85,7 @@ export default class Schools {
     let schoolCount: number
     try {
       schoolCount = (
-        await db.query<count[]>('SELECT COUNT(*) FROM schools WHERE name = ? AND category = ? AND id != ?', [body.name, body.category, id])
+        await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE name = ? AND category = ? AND id != ?', [body.name, body.category, id])
       )[0].count
     } catch (error: any) {
       throw new DBException()
@@ -100,7 +103,7 @@ export default class Schools {
     return this.getSchools()
   }
 
-  async deleteSchool(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ schools: School[] }>> {
+  async deleteSchool(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ schools: School[]; teams: Team[]; matches: Match[] }>> {
     try {
       nexter.serviceToException(await new AuthService().checkAuth(headers['authorization'] + '', 'Bearer'))
     } catch (error: unknown) {
@@ -118,12 +121,40 @@ export default class Schools {
       throw new RequestException('School not found')
     }
 
+    let teams: Team[]
     try {
+      teams = await db.query<Team[]>('SELECT * FROM teams WHERE school = ?', [id])
+    } catch (error: any) {
+      throw new DBException()
+    }
+
+    teams.forEach(async (team) => {
+      try {
+        // Delete matches
+        await db.query('DELETE FROM matches WHERE team1 = ? OR team2 = ?', [team.id, team.id])
+      } catch (error: any) {
+        throw new DBException()
+      }
+    })
+
+    try {
+      // Delete teams
+      await db.query('DELETE FROM teams WHERE school = ?', [id])
+    } catch (error: any) {
+      throw new DBException()
+    }
+
+    try {
+      // Delete school
       await db.query('DELETE FROM schools WHERE id = ?', [id])
     } catch (error: any) {
       throw new DBException()
     }
 
-    return this.getSchools()
+    return new DataSuccess(200, SUCCESS, 'Success', {
+      schools: (await this.getSchools()).data.schools,
+      teams: (await new Teams().getTeams()).data.teams,
+      matches: []
+    })
   }
 }

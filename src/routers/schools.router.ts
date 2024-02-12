@@ -7,6 +7,8 @@ import Auth from '$controllers/auth.controller'
 import { ControllerException } from '$models/types'
 import { School } from '$models/features/school.model'
 import Schools from '$controllers/schools.controller'
+import { Team } from '$models/features/team.model'
+import { Match } from '$models/features/match.model'
 
 export default class SchoolsRouter implements Route {
   router = Router()
@@ -130,13 +132,16 @@ export default class SchoolsRouter implements Route {
      *       401:
      *         description: Unauthorized
      */
-    this.router.delete(`${this.path}/:id`, async (req: Request, res: Response<DataHttpResponse<{ schools: School[] }>>, next: NextFunction) => {
-      try {
-        const resp = await new Schools().deleteSchool(req.headers, +req.params.id)
-        res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
-      } catch (error: unknown) {
-        next(error as ControllerException)
+    this.router.delete(
+      `${this.path}/:id`,
+      async (req: Request, res: Response<DataHttpResponse<{ schools: School[]; teams: Team[]; matches: Match[] }>>, next: NextFunction) => {
+        try {
+          const resp = await new Schools().deleteSchool(req.headers, +req.params.id)
+          res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
+        } catch (error: unknown) {
+          next(error as ControllerException)
+        }
       }
-    })
+    )
   }
 }

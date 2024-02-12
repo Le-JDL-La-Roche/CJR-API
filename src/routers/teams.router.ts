@@ -7,6 +7,7 @@ import Auth from '$controllers/auth.controller'
 import { ControllerException } from '$models/types'
 import { Team } from '$models/features/team.model'
 import Teams from '$controllers/teams.controller'
+import { Match } from '$models/features/match.model'
 
 export default class TeamsRouter implements Route {
   router = Router()
@@ -134,13 +135,16 @@ export default class TeamsRouter implements Route {
      *       401:
      *         description: Unauthorized
      */
-    this.router.delete(`${this.path}/:id`, async (req: Request, res: Response<DataHttpResponse<{ teams: Team[] }>>, next: NextFunction) => {
-      try {
-        const resp = await new Teams().deleteTeam(req.headers, +req.params.id)
-        res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
-      } catch (error: unknown) {
-        next(error as ControllerException)
+    this.router.delete(
+      `${this.path}/:id`,
+      async (req: Request, res: Response<DataHttpResponse<{ teams: Team[]; matches: Match[] }>>, next: NextFunction) => {
+        try {
+          const resp = await new Teams().deleteTeam(req.headers, +req.params.id)
+          res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
+        } catch (error: unknown) {
+          next(error as ControllerException)
+        }
       }
-    })
+    )
   }
 }
