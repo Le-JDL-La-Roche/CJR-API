@@ -77,7 +77,7 @@ export default class TeamsRouter implements Route {
 
     /**
      * @openapi
-     * /teams/{teams_id}:
+     * /teams/{team_id}:
      *   put:
      *     tags:
      *      - Teams

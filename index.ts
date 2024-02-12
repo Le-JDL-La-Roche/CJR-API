@@ -5,5 +5,9 @@ import DefaultSocket from '$sockets/default.socket'
 import AgendaRouter from '$routers/agenda.router'
 import SchoolsRouter from '$routers/schools.router'
 import TeamsRouter from '$routers/teams.router'
+import MatchesRouter from '$routers/matches.router'
 
-new App([new DefaultRouter(), new AuthRouter(), new SchoolsRouter(), new TeamsRouter(), new AgendaRouter()], [new DefaultSocket()]).listen()
+new App(
+  [new DefaultRouter(), new AuthRouter(), new SchoolsRouter(), new TeamsRouter(), new MatchesRouter(), new AgendaRouter()],
+  [new DefaultSocket()]
+).listen()

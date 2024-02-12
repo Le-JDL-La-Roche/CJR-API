@@ -33,6 +33,8 @@ const options: swaggerJSDoc.OAS3Options = {
       { name: 'Auth' },
       { name: 'Agenda' },
       { name: 'Schools' },
+      { name: 'Teams' },
+      { name: 'Matches' },
     ]
   },
   apis: [`${__dirname}/./../src/routers/*.ts`, `${__dirname}/./../build/src/routers/*.js`]

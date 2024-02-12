@@ -36,7 +36,7 @@ export default class Teams {
 
     let schoolCount: number
     try {
-      schoolCount = (await db.query<count[]>('SELECT COUNT(*) as count FROM schools WHERE id = ?', [+body.school]))[0].count
+      schoolCount = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [+body.school]))[0].count
     } catch (error: any) {
       throw new DBException()
     }
