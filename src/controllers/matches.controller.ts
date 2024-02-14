@@ -33,7 +33,7 @@ export default class Matches {
       throw new RequestException('Missing parameters')
     }
 
-    if (body.category !== 'C' && body.category !== 'L') {
+    if ((body.category !== 'C' && body.category !== 'L') || body.fromDate >= body.toDate) {
       throw new RequestException('Invalid parameters')
     }
 
@@ -50,9 +50,13 @@ export default class Matches {
       throw new RequestException('Team(s) not found')
     }
 
+    if (body.score1 && body.score2 && body.score1 != 0 && body.score2 != 0 && body.score1 === body.score2) {
+      throw new RequestException('Invalid score')
+    }
+
     let matches: Match[]
     try {
-      matches = await db.query<Match[]>('SELECT COUNT(*) AS count FROM matches WHERE field = ?', [body.field])
+      matches = await db.query<Match[]>('SELECT * FROM matches WHERE field = ?', [body.field])
     } catch (error: any) {
       throw new DBException()
     }
@@ -60,9 +64,9 @@ export default class Matches {
     matches.forEach((match) => {
       if (
         // début     après    début      ET     début    avant    fin
-        (+body.fromDate >= +match.fromDate && +body.fromDate < +match.toDate) ||
+        (new Date(body.fromDate) >= new Date(match.fromDate) && new Date(body.fromDate) < new Date(match.toDate)) ||
         //   fin    après   début      ET      fin   avant   fin
-        (+body.toDate >= +match.fromDate && +body.toDate <= +match.toDate)
+        (new Date(body.toDate) >= new Date(match.fromDate) && new Date(body.toDate) <= new Date(match.toDate))
       ) {
         throw new RequestException('Field already booked')
       }
@@ -87,6 +91,10 @@ export default class Matches {
       throw error as ControllerException
     }
 
+    if ((body.category && body.category !== 'C' && body.category !== 'L') || (body.fromDate && body.toDate && body.fromDate >= body.toDate)) {
+      throw new RequestException('Invalid parameters')
+    }
+
     let match: Match
     try {
       match = (await db.query<Match[]>('SELECT * FROM matches WHERE id = ?', [id]))[0]
@@ -97,20 +105,28 @@ export default class Matches {
       throw new RequestException('Match not found')
     }
 
+    if (match.score1 || match.score2) {
+      throw new RequestException('Match already played')
+    }
+
+    if (body.score1 && body.score2 && body.score1 != 0 && body.score2 != 0 && body.score1 === body.score2) {
+      throw new RequestException('Invalid score')
+    }
+
     let matches: Match[]
     try {
-      matches = await db.query<Match[]>('SELECT COUNT(*) AS count FROM matches WHERE field = ? AND id != ?', [body.field || match.field, id])
+      matches = await db.query<Match[]>('SELECT * FROM matches WHERE field = ? AND id != ?', [body.field || match.field, id])
     } catch (error: any) {
       throw new DBException('1')
     }
 
-    if (body.fromDate && +body.fromDate && body.toDate && +body.toDate && matches.length > 0) {
+    if (body.fromDate && body.fromDate && body.toDate && body.toDate && matches.length > 0) {
       matches.forEach((match) => {
         if (
           // début     après    début      ET     début    avant    fin
-          (+body.fromDate! >= +match.fromDate && +body.fromDate! < +match.toDate) ||
+          (new Date(body.fromDate!) >= new Date(match.fromDate) && new Date(body.fromDate!) < new Date(match.toDate)) ||
           //   fin    après   début      ET      fin   avant   fin
-          (+body.toDate! >= +match.fromDate && +body.toDate! <= +match.toDate)
+          (new Date(body.toDate!) >= new Date(match.fromDate) && new Date(body.toDate!) <= new Date(match.toDate))
         ) {
           throw new RequestException('Field already booked')
         }
@@ -176,6 +192,10 @@ export default class Matches {
 
     if (!match || !match.id) {
       throw new RequestException('Match not found')
+    }
+
+    if (match.score1 || match.score2) {
+      throw new RequestException('Match already played')
     }
 
     try {

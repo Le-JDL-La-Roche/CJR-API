@@ -17,7 +17,7 @@ export default class Schools {
     let schools: School[] = []
 
     try {
-      schools = await db.query('SELECT * FROM schools ORDER BY category, name')
+      schools = await db.query('SELECT * FROM schools ORDER BY category, name DESC')
     } catch (error: any) {
       throw new DBException()
     }
