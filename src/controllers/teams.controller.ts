@@ -9,8 +9,12 @@ import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { Team } from '$models/features/team.model'
 import { Match } from '$models/features/match.model'
+import Matches from './matches.controller'
 
 export default class Teams {
+  getMatches() {
+    throw new Error('Method not implemented.')
+  }
   async getTeams(): Promise<DataSuccess<{ teams: Team[] }>> {
     let teams: Team[] = []
 
@@ -19,6 +23,10 @@ export default class Teams {
     } catch (error: any) {
       throw new DBException()
     }
+
+    teams.forEach((team, i) => {
+      teams[i].teammates = JSON.parse(team.teammates as unknown as string)
+    })
 
     return new DataSuccess(200, SUCCESS, 'Success', { teams })
   }
@@ -152,7 +160,7 @@ export default class Teams {
 
     return new DataSuccess(200, SUCCESS, 'Success', {
       teams: (await this.getTeams()).data.teams,
-      matches: []
+      matches: (await new Matches().getMatches()).data.matches
     })
   }
 }

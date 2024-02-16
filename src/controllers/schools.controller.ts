@@ -11,6 +11,7 @@ import { School } from '$models/features/school.model'
 import { Team } from '$models/features/team.model'
 import Teams from './teams.controller'
 import { Match } from '$models/features/match.model'
+import Matches from './matches.controller'
 
 export default class Schools {
   async getSchools(): Promise<DataSuccess<{ schools: School[] }>> {
@@ -154,7 +155,7 @@ export default class Schools {
     return new DataSuccess(200, SUCCESS, 'Success', {
       schools: (await this.getSchools()).data.schools,
       teams: (await new Teams().getTeams()).data.teams,
-      matches: []
+      matches: (await new Matches().getMatches()).data.matches,
     })
   }
 }
