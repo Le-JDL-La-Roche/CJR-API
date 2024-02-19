@@ -33,7 +33,7 @@ export default class Matches {
       throw new RequestException('Missing parameters')
     }
 
-    if ((body.category !== 'C' && body.category !== 'L') || body.fromDate >= body.toDate) {
+    if (body.category !== 'C' && body.category !== 'L') {
       throw new RequestException('Invalid parameters')
     }
 
@@ -104,7 +104,7 @@ export default class Matches {
       throw new RequestException('Match not found')
     }
 
-    if ((body.category && body.category !== 'C' && body.category !== 'L') || (body.fromDate && body.toDate && body.fromDate >= body.toDate)) {
+    if (body.category && body.category !== 'C' && body.category !== 'L') {
       throw new RequestException('Invalid parameters')
     }
 
