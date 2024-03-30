@@ -28,8 +28,6 @@ export default class DefaultSocket implements IO {
 
       DefaultSocket.scoreboard = data.scoreboard
       io.emit('scoreboardUpdated', data.scoreboard)
-      console.log(DefaultSocket.scoreboard)
-
     })
 
     socket.on('getScoreboard', async () => {

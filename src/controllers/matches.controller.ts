@@ -8,6 +8,7 @@ import nexter from '$utils/nexter'
 import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { Match } from '$models/features/match.model'
+import * as fs from 'fs'
 
 export default class Matches {
   async getMatches(): Promise<DataSuccess<{ matches: Match[] }>> {
@@ -215,5 +216,43 @@ export default class Matches {
     return new DataSuccess(200, SUCCESS, 'Success', {
       matches: (await this.getMatches()).data.matches
     })
+  }
+
+  async getStreams(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ ter1: string, ter2: string, glob: string }>> {
+    try {
+      nexter.serviceToException(await new AuthService().checkAuth(headers['authorization'] + '', 'Bearer'))
+    } catch (error: unknown) {
+      throw error as ControllerException
+    }
+
+    return new DataSuccess(200, SUCCESS, 'Success', {
+      ter1: process.env['TER1'] + '',
+      ter2: process.env['TER2'] + '',
+      glob: process.env['GLOB'] + ''
+    })
+  }
+
+  async updateKeyFile(headers: IncomingHttpHeaders, body: { key: string }): Promise<DataSuccess<{ key: string }>> {
+    try {
+      nexter.serviceToException(await new AuthService().checkAuth(headers['authorization'] + '', 'Bearer'))
+    } catch (error: unknown) {
+      throw error as ControllerException
+    }
+    
+    if (!body.key) {
+      throw new RequestException('Missing parameters')
+    }
+
+    const path = process.env['NODE_ENV'] === 'production'
+      ? '/var/www/stream.cjr/key'
+      : './key'
+
+    fs.writeFile(path, body.key, err => {
+      if (err) {
+        console.error(err);
+      }
+    })
+
+    return new DataSuccess(200, SUCCESS, 'Success', { key: body.key })
   }
 }
