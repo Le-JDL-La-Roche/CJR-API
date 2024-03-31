@@ -170,5 +170,65 @@ export default class MatchesRouter implements Route {
         }
       }
     )
+
+    /**
+     * @openapi
+     * /streams:
+     *   get:
+     *     tags:
+     *       - Matches
+     *     security:
+     *       - bearer: []
+     *     summary: Get the streams for live
+     *     responses:
+     *       200:
+     *         description: Success
+     *       401:
+     *         description: Unauthorized
+     */
+    this.router.get(
+      `/streams`,
+      async (req: Request, res: Response<DataHttpResponse<{ ter1: string, ter2: string, glob: string }>>, next: NextFunction) => {
+        try {
+          const resp = await new Matches().getStreams(req.headers, +req.params.id)
+          res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
+        } catch (error: unknown) {
+          next(error as ControllerException)
+        }
+      }
+    )
+
+    /**
+     * @openapi
+     * /key:
+     *   put:
+     *     tags:
+     *       - Matches
+     *     security:
+     *       - bearer: []
+     *     summary: Update the key file
+     *     requestBody:
+     *       required: false
+     *       content:
+     *         application/x-www-form-urlencoded:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               key:
+     *                 type: string
+     *     responses:
+     *       200:
+     *         description: Success
+     *       401:
+     *         description: Unauthorized
+     */
+    this.router.put(`/key`, async (req: Request, res: Response<DataHttpResponse<{ key: string }>>, next: NextFunction) => {
+      try {
+        const resp = await new Matches().updateKeyFile(req.headers, req.body)
+        res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })
+      } catch (error: unknown) {
+        next(error as ControllerException)
+      }
+    })
   }
 }
