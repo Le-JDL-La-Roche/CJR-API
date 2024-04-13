@@ -9,6 +9,7 @@ import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { Match } from '$models/features/match.model'
 import * as fs from 'fs'
+import path from 'path'
 
 export default class Matches {
   async getMatches(): Promise<DataSuccess<{ matches: Match[] }>> {
@@ -243,11 +244,11 @@ export default class Matches {
       throw new RequestException('Missing parameters')
     }
 
-    const path = process.env['NODE_ENV'] === 'production'
-      ? '/var/www/stream.cjr/key'
+    const keyPath = process.platform === 'linux'
+      ? path.join('/var/www/stream.cjr/key')
       : './key'
 
-    fs.writeFile(path, body.key, err => {
+    fs.writeFile(keyPath, body.key, err => {
       if (err) {
         console.error(err);
       }
