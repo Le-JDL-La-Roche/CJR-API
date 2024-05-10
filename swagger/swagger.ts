@@ -29,7 +29,7 @@ const options: swaggerJSDoc.OAS3Options = {
         }
       }
     },
-    tags: [{ name: 'Auth' }, { name: 'Schools' }, { name: 'Teams' }, { name: 'Matches' }, { name: 'Agenda' }, { name: 'Lives' }]
+    tags: [{ name: 'Auth' }, { name: 'Schools' }, /*{ name: 'Teams' },*/ { name: 'Matches' }, { name: 'Agenda' }, { name: 'Lives' }]
   },
   apis: [`${__dirname}/./../src/routers/*.ts`, `${__dirname}/./../build/src/routers/*.js`]
 }

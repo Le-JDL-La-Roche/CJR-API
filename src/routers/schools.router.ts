@@ -59,6 +59,8 @@ export default class SchoolsRouter implements Route {
      *                 type: string
      *               category:
      *                 type: number
+     *               teammates:
+     *                 type: string
      *     responses:
      *       200:
      *         description: Success
@@ -98,6 +100,8 @@ export default class SchoolsRouter implements Route {
      *                 type: string
      *               category:
      *                 type: string
+     *               teammates:
+     *                 type: string
      *     responses:
      *       200:
      *         description: Success
@@ -134,7 +138,7 @@ export default class SchoolsRouter implements Route {
      */
     this.router.delete(
       `${this.path}/:id`,
-      async (req: Request, res: Response<DataHttpResponse<{ schools: School[]; teams: Team[]; matches: Match[] }>>, next: NextFunction) => {
+      async (req: Request, res: Response<DataHttpResponse<{ schools: School[]; /*teams: Team[];*/ matches: Match[] }>>, next: NextFunction) => {
         try {
           const resp = await new Schools().deleteSchool(req.headers, +req.params.id)
           res.status(resp.httpStatus).send({ code: resp.code, message: resp.message, data: resp.data })

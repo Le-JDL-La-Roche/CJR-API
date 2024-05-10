@@ -9,6 +9,6 @@ import MatchesRouter from '$routers/matches.router'
 import LivesRouter from '$routers/lives.router'
 
 new App(
-  [new DefaultRouter(), new AuthRouter(), new SchoolsRouter(), new TeamsRouter(), new MatchesRouter(), new AgendaRouter(), new LivesRouter()],
+  [new DefaultRouter(), new AuthRouter(), new SchoolsRouter(), /*new TeamsRouter(),*/ new MatchesRouter(), new AgendaRouter(), new LivesRouter()],
   [new DefaultSocket()]
 ).listen()

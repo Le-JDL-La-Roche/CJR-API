@@ -8,8 +8,8 @@ import nexter from '$utils/nexter'
 import { AuthService } from '$services/auth.service'
 import { RequestException } from '$responses/exceptions/request-exception.response'
 import { School } from '$models/features/school.model'
-import { Team } from '$models/features/team.model'
-import Teams from './teams.controller'
+// import { Team } from '$models/features/team.model'
+// import Teams from './teams.controller'
 import { Match } from '$models/features/match.model'
 import Matches from './matches.controller'
 
@@ -18,10 +18,14 @@ export default class Schools {
     let schools: School[] = []
 
     try {
-      schools = await db.query('SELECT * FROM schools ORDER BY category, name DESC')
+      schools = await db.query('SELECT * FROM schools ORDER BY category, name')
     } catch (error: any) {
       throw new DBException()
     }
+
+    schools.forEach((school, i) => {
+      schools[i].teammates = JSON.parse(school.teammates as unknown as string)
+    })
 
     return new DataSuccess(200, SUCCESS, 'Success', { schools })
   }
@@ -33,7 +37,7 @@ export default class Schools {
       throw error as ControllerException
     }
 
-    if (!body.name || !body.category) {
+    if (!body.name || !body.category || !body.teammates) {
       throw new RequestException('Missing parameters')
     }
 
@@ -54,7 +58,7 @@ export default class Schools {
     }
 
     try {
-      await db.query('INSERT INTO schools (name, category) VALUES (?, ?)', [body.name, body.category])
+      await db.query('INSERT INTO schools (name, category, teammates) VALUES (?, ?, ?)', [body.name, body.category, body.teammates])
     } catch (error: any) {
       throw new DBException()
     }
@@ -96,7 +100,7 @@ export default class Schools {
     }
 
     try {
-      await db.query('UPDATE schools SET name = ?, category = ? WHERE id = ?', [body.name || school.name, body.category || school.category, id])
+      await db.query('UPDATE schools SET name = ?, category = ?, teammates = ? WHERE id = ?', [body.name || school.name, body.category || school.category, body.teammates || school.teammates, id])
     } catch (error: any) {
       throw new DBException()
     }
@@ -104,7 +108,7 @@ export default class Schools {
     return this.getSchools()
   }
 
-  async deleteSchool(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ schools: School[]; teams: Team[]; matches: Match[] }>> {
+  async deleteSchool(headers: IncomingHttpHeaders, id: number): Promise<DataSuccess<{ schools: School[]; matches: Match[] }>> {
     try {
       nexter.serviceToException(await new AuthService().checkAuth(headers['authorization'] + '', 'Bearer'))
     } catch (error: unknown) {
@@ -122,28 +126,28 @@ export default class Schools {
       throw new RequestException('School not found')
     }
 
-    let teams: Team[]
-    try {
-      teams = await db.query<Team[]>('SELECT * FROM teams WHERE school = ?', [id])
-    } catch (error: any) {
-      throw new DBException()
-    }
+    // let teams: Team[]
+    // try {
+    //   teams = await db.query<Team[]>('SELECT * FROM teams WHERE school = ?', [id])
+    // } catch (error: any) {
+    //   throw new DBException()
+    // }
 
-    teams.forEach(async (team) => {
+    // teams.forEach(async (team) => {
       try {
         // Delete matches
-        await db.query('DELETE FROM matches WHERE team1 = ? OR team2 = ?', [team.id, team.id])
+        await db.query('DELETE FROM matches WHERE team1 = ? OR team2 = ?', [id, id])
       } catch (error: any) {
         throw new DBException()
       }
-    })
+    // })
 
-    try {
-      // Delete teams
-      await db.query('DELETE FROM teams WHERE school = ?', [id])
-    } catch (error: any) {
-      throw new DBException()
-    }
+    // try {
+    //   // Delete teams
+    //   await db.query('DELETE FROM teams WHERE school = ?', [id])
+    // } catch (error: any) {
+    //   throw new DBException()
+    // }
 
     try {
       // Delete school
@@ -154,7 +158,7 @@ export default class Schools {
 
     return new DataSuccess(200, SUCCESS, 'Success', {
       schools: (await this.getSchools()).data.schools,
-      teams: (await new Teams().getTeams()).data.teams,
+      // teams: (await new Teams().getTeams()).data.teams,
       matches: (await new Matches().getMatches()).data.matches,
     })
   }

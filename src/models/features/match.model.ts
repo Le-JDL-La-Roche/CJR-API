@@ -8,5 +8,5 @@ export interface Match {
   fromDate: string
   toDate: string
   field: number
-  tree: number
+  tree: string
 }

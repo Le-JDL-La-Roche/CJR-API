@@ -42,14 +42,14 @@ export default class Matches {
     let team1Count: number
     let team2Count: number
     try {
-      team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE id = ?', [body.team1]))[0].count
-      team2Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE id = ?', [body.team2]))[0].count
+      team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [body.team1]))[0].count
+      team2Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [body.team2]))[0].count
     } catch (error: any) {
       throw new DBException()
     }
 
     if (team1Count === 0 || team2Count === 0) {
-      throw new RequestException('Team(s) not found')
+      throw new RequestException('School(s) not found')
     }
 
     if (new Date(body.fromDate) >= new Date(body.toDate)) {
@@ -118,14 +118,14 @@ export default class Matches {
     let team2Count: number = 1
     if (body.team1) {
       try {
-        team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE id = ?', [body.team1]))[0].count
+        team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [body.team1]))[0].count
       } catch (error: any) {
         throw new DBException()
       }
     }
     if (body.team2) {
       try {
-        team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM teams WHERE id = ?', [body.team1]))[0].count
+        team1Count = (await db.query<count[]>('SELECT COUNT(*) AS count FROM schools WHERE id = ?', [body.team1]))[0].count
       } catch (error: any) {
         throw new DBException()
       }
